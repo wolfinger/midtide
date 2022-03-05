@@ -2,6 +2,8 @@ from __future__ import print_function
 
 import datetime
 import os.path
+from pkgutil import get_data
+from webbrowser import get
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -72,16 +74,17 @@ def gcal():
 # surfline api
 # ###############
 # surf_check()
-
+def surf_check(spot_id):
+    params = {
+        "spotId": spot_id,
+        "days": 1,
+        "intervalHours": 3,
+    }
+    forecast = SpotForecast(params)
+    print(forecast.get_dataframe('wave'))
 
 def main():
-    params = {
-        'spotId': '5842041f4e65fad6a7708841',
-        'days': 1,
-        'intervalHours': 3,
-    }
-    report = SpotForecast(params)
-    print(report.tides)
+    surf_check("5842041f4e65fad6a7708841")
 
 if __name__ == '__main__':
     main()
