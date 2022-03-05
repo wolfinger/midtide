@@ -9,14 +9,22 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
-# If modifying these scopes, delete the file token.json.
-SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
+# set scopes
+SCOPES = ['https://www.googleapis.com/auth/calendar']
+
+# google cal api
+# ###############
+# set_credentials()
+# create_event()
+# update_event()
+# delete_event()
+
+# surfline api
+# ###############
+# surf_check()
 
 
 def main():
-    """Shows basic usage of the Google Calendar API.
-    Prints the start and name of the next 10 events on the user's calendar.
-    """
     creds = None
     # The file token.json stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
@@ -35,25 +43,29 @@ def main():
         with open('token.json', 'w') as token:
             token.write(creds.to_json())
 
+    # test calendar insert
     try:
         service = build('calendar', 'v3', credentials=creds)
 
-        # Call the Calendar API
-        now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
-        print('Getting the upcoming 10 events')
-        events_result = service.events().list(calendarId='primary', timeMin=now,
-                                              maxResults=10, singleEvents=True,
-                                              orderBy='startTime').execute()
-        events = events_result.get('items', [])
+        # create sarf event
+        sarf_event = {
+            'summary': 'gnar sesh',
+            'start': {
+                'dateTime': '2022-03-15T07:00:00-07:00',
+                'timeZone': 'America/Los_Angeles',
+            },
+            'end': {
+                'dateTime': '2022-03-15T08:00:00-07:00',
+                'timeZone': 'America/Los_Angeles',
+            },
+            'reminders': {
+                'useDefault': False
+            }
+        }
 
-        if not events:
-            print('No upcoming events found.')
-            return
+        event = service.events().insert(calendarId='primary', body=sarf_event).execute()
 
-        # Prints the start and name of the next 10 events
-        for event in events:
-            start = event['start'].get('dateTime', event['start'].get('date'))
-            print(start, event['summary'])
+        print("Event created:", event.get('htmlLink'))
 
     except HttpError as error:
         print('An error occurred: %s' % error)
