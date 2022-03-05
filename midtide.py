@@ -9,6 +9,9 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
+from pysurfline import SpotForecast
+
+
 # set scopes
 SCOPES = ['https://www.googleapis.com/auth/calendar']
 
@@ -19,12 +22,7 @@ SCOPES = ['https://www.googleapis.com/auth/calendar']
 # update_event()
 # delete_event()
 
-# surfline api
-# ###############
-# surf_check()
-
-
-def main():
+def gcal():
     creds = None
     # The file token.json stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
@@ -68,8 +66,22 @@ def main():
         print("Event created:", event.get('htmlLink'))
 
     except HttpError as error:
-        print('An error occurred: %s' % error)
+        print("An error occurred: %s" % error)
 
+
+# surfline api
+# ###############
+# surf_check()
+
+
+def main():
+    params = {
+        'spotId': '5842041f4e65fad6a7708841',
+        'days': 1,
+        'intervalHours': 3,
+    }
+    report = SpotForecast(params)
+    print(report.tides)
 
 if __name__ == '__main__':
     main()
