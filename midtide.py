@@ -41,12 +41,10 @@ class OptimalWindow:
 
 # google cal api
 # ###############
-# set_credentials()
-# create_event()
-# update_event()
-# delete_event()
-
-def gcal():
+def cal_set_credentials():
+    """
+    set googel calendar credentials
+    """
     creds = None
     # The file token.json stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
@@ -64,34 +62,17 @@ def gcal():
         # Save the credentials for the next run
         with open('token.json', 'w') as token:
             token.write(creds.to_json())
+    
+    return creds
 
+def cal_create_event(event, creds):
     # test calendar insert
     try:
         service = build('calendar', 'v3', credentials=creds)
-
-        # create sarf event
-        sarf_event = {
-            'summary': 'gnar sesh',
-            'start': {
-                'dateTime': '2022-03-15T07:00:00-07:00',
-                'timeZone': 'America/Los_Angeles',
-            },
-            'end': {
-                'dateTime': '2022-03-15T08:00:00-07:00',
-                'timeZone': 'America/Los_Angeles',
-            },
-            'reminders': {
-                'useDefault': False
-            }
-        }
-
-        event = service.events().insert(calendarId='primary', body=sarf_event).execute()
-
-        print("Event created:", event.get('htmlLink'))
+        event = service.events().insert(calendarId='primary', body=event).execute()
 
     except HttpError as error:
         print("An error occurred: %s" % error)
-
 
 # surfline api
 # ###############
@@ -167,6 +148,27 @@ def main():
         opt_end_time_rel, opt_end_time_abs)
     
     windows = get_optimal_windows(forecast, params)
+
+    # set credentials to access calendar
+    creds = cal_set_credentials()
+
+    # create calendar events
+    for window in windows:
+        sarf_event = {
+            'summary': 'gnar sesh',
+            'start': {
+                'dateTime': window.start_dt.strftime('%Y-%m-%dT%H:%M:%S'),
+                'timeZone': 'America/Los_Angeles',
+            },
+            'end': {
+                'dateTime': window.end_dt.strftime('%Y-%m-%dT%H:%M:%S'),
+                'timeZone': 'America/Los_Angeles',
+            },
+            'reminders': {
+                'useDefault': False
+            }
+        }
+        cal_create_event(sarf_event, creds)
 
 if __name__ == '__main__':
     main()
