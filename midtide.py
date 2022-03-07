@@ -95,10 +95,12 @@ def get_optimal_windows(forecast, params):
     # convert all timestamps to local time
     
 
-    # get unique date list at local time zone
+    # get datetime list for only the future and conver to local time zone
     tides_df = forecast.get_dataframe("tides")
+    # find the closest low/high tide to current time
+    min_dt = tides_df[(tides_df['type'].isin(['LOW', 'HIGH'])) & (tides_df.index <= datetime.datetime.utcnow())].index.max()
+    tides_df = tides_df[tides_df.index >= min_dt]
     tides_df.index = tides_df.index + pd.DateOffset(hours=int(tides_df['utcOffset'][0]))
-    forecast_dates = pd.unique(tides_df.index.date)
 
     # get optimal window for each date
     optimal_windows = []
@@ -168,6 +170,7 @@ def main():
                 'useDefault': False
             }
         }
+        #print(sarf_event)
         cal_create_event(sarf_event, creds)
 
 if __name__ == '__main__':
