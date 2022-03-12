@@ -91,16 +91,14 @@ def surf_check(spot_id, days, interval):
 def get_optimal_windows(forecast, params):
     """
     iterate thru a forecast to get optimal surf windows for each day
-    """
-    # convert all timestamps to local time
-    
-
+    """ 
     # get datetime list for only the future and conver to local time zone
     tides_df = forecast.get_dataframe("tides")
+    
     # find the closest low/high tide to current time
     min_dt = tides_df[(tides_df['type'].isin(['LOW', 'HIGH'])) & (tides_df.index <= datetime.datetime.utcnow())].index.max()
     tides_df = tides_df[tides_df.index >= min_dt]
-    tides_df.index = tides_df.index + pd.DateOffset(hours=int(tides_df['utcOffset'][0]))
+    tides_df.index = tides_df.index + tides_df['utcOffset'].astype('timedelta64[h]')
 
     # get optimal window for each date
     optimal_windows = []
@@ -111,16 +109,40 @@ def get_optimal_windows(forecast, params):
             last_low = index
             if last_high != None:
                 mid = calc_mid(last_low, last_high)
-                optimal_windows.append(OptimalWindow(mid - pd.DateOffset(minutes=params.length / 2), 
-                    mid + pd.DateOffset(minutes=params.length / 2)))
+                if mid >= datetime.datetime.now():
+                    optimal_windows.append(OptimalWindow(mid - pd.DateOffset(minutes=params.length / 2), 
+                        mid + pd.DateOffset(minutes=params.length / 2)))
         elif row['type'] == 'HIGH':
             last_high = index
             if last_low != None:
                 mid = calc_mid(last_low, last_high)
-                optimal_windows.append(OptimalWindow(mid - pd.DateOffset(minutes=params.length / 2), 
-                    mid + pd.DateOffset(minutes=params.length / 2)))
+                if mid >= datetime.datetime.now():
+                    optimal_windows.append(OptimalWindow(mid - pd.DateOffset(minutes=params.length / 2), 
+                        mid + pd.DateOffset(minutes=params.length / 2)))
 
-    return optimal_windows
+    #
+    # drop gnar sesh's when the sun's down
+    # TODO: refactor as function
+    sunlight_df = forecast.get_dataframe("sunlightTimes")
+
+    # convert timestamps to local time
+    for time_pd in ['midnight', 'dawn', 'dusk']:
+        sunlight_df[time_pd] = sunlight_df[time_pd] + sunlight_df[time_pd + 'UTCOffset'].astype('timedelta64[h]')
+
+    sunlight_df['date'] = sunlight_df['dawn'].dt.date
+    sunlight_df = sunlight_df.set_index('date')
+
+    daytime_windows = []
+
+    for window in optimal_windows:
+         window_dt = window.start_dt.to_pydatetime().date()
+
+         if not sunlight_df[sunlight_df.index == window_dt].empty and \
+         sunlight_df[sunlight_df.index == window_dt]['dawn'].values[0] < window.start_dt.to_numpy() and \
+         sunlight_df[sunlight_df.index == window_dt]['dusk'].values[0] > window.end_dt.to_numpy():
+            daytime_windows.append(window)
+    
+    return daytime_windows
 
 def calc_mid(start, end):
     return start + (end - start) / 2
