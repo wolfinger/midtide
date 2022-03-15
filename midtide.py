@@ -43,7 +43,7 @@ class OptimalWindow:
 # ###############
 def cal_set_credentials():
     """
-    set googel calendar credentials
+    set google calendar credentials
     """
     creds = None
     # The file token.json stores the user's access and refresh tokens, and is
@@ -92,7 +92,7 @@ def get_optimal_windows(forecast, params):
     """
     iterate thru a forecast to get optimal surf windows for each day
     """ 
-    # get datetime list for only the future and conver to local time zone
+    # get datetime list for only the future and conver to local time ztone
     tides_df = forecast.get_dataframe("tides")
     
     # find the closest low/high tide to current time
