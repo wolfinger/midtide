@@ -98,7 +98,7 @@ def get_optimal_windows(forecast, params):
     # find the closest low/high tide to current time
     min_dt = tides_df[(tides_df['type'].isin(['LOW', 'HIGH'])) & (tides_df.index <= datetime.datetime.utcnow())].index.max()
     tides_df = tides_df[tides_df.index >= min_dt]
-    tides_df.index = tides_df.index + tides_df['utcOffset'].astype('timedelta64[h]')
+    #tides_df.index = tides_df.index + tides_df['utcOffset'].astype('timedelta64[h]')
 
     # get optimal window for each date
     optimal_windows = []
@@ -126,8 +126,8 @@ def get_optimal_windows(forecast, params):
     sunlight_df = forecast.get_dataframe("sunlightTimes")
 
     # convert timestamps to local time
-    for time_pd in ['midnight', 'dawn', 'dusk']:
-        sunlight_df[time_pd] = sunlight_df[time_pd] + sunlight_df[time_pd + 'UTCOffset'].astype('timedelta64[h]')
+    #for time_pd in ['midnight', 'dawn', 'dusk']:
+    #    sunlight_df[time_pd] = sunlight_df[time_pd] + sunlight_df[time_pd + 'UTCOffset'].astype('timedelta64[h]')
 
     sunlight_df['date'] = sunlight_df['dawn'].dt.date
     sunlight_df = sunlight_df.set_index('date')
@@ -181,12 +181,12 @@ def main():
         sarf_event = {
             'summary': 'gnar sesh',
             'start': {
-                'dateTime': window.start_dt.strftime('%Y-%m-%dT%H:%M:%S'),
-                'timeZone': 'America/Los_Angeles',
+                'dateTime': window.start_dt.strftime('%Y-%m-%dT%H:%M:%S') + 'Z',
+                #'timeZone': 'America/Los_Angeles',
             },
             'end': {
-                'dateTime': window.end_dt.strftime('%Y-%m-%dT%H:%M:%S'),
-                'timeZone': 'America/Los_Angeles',
+                'dateTime': window.end_dt.strftime('%Y-%m-%dT%H:%M:%S') + 'Z',
+                #'timeZone': 'America/Los_Angeles',
             },
             'reminders': {
                 'useDefault': False
