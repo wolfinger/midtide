@@ -12,6 +12,7 @@ SCOPES = ['https://www.googleapis.com/auth/calendar']
 # google cal api
 # ###############
 
+
 def set_credentials():
     """
     set google calendar credentials, code snippet lifted from google cal api start docs
@@ -39,6 +40,7 @@ def set_credentials():
     
     return creds
 
+
 def create_event(event, creds):
     """
     creat a google calendar event
@@ -51,6 +53,7 @@ def create_event(event, creds):
     except HttpError as error:
         print("An error occurred: %s" % error)
 
+
 def create_event_json(session):
     """
     generate google calendar event api json from a SurfSession
@@ -59,11 +62,11 @@ def create_event_json(session):
             'summary': 'gnar sesh',
             'start': {
                 'dateTime': session.start_dt.strftime('%Y-%m-%dT%H:%M:%S') + 'Z',
-                #'timeZone': 'America/Los_Angeles',
+                # 'timeZone': 'America/Los_Angeles',
             },
             'end': {
                 'dateTime': session.end_dt.strftime('%Y-%m-%dT%H:%M:%S') + 'Z',
-                #'timeZone': 'America/Los_Angeles',
+                # 'timeZone': 'America/Los_Angeles',
             },
             'reminders': {
                 'useDefault': False
