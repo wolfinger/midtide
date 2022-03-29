@@ -8,7 +8,7 @@ def main():
     # set forecast parameters
     forecast_spot = "5842041f4e65fad6a7708841"  # pb baby
     forecast_days = 3
-    forecast_interval = 3
+    forecast_interval = 1
     hit_api = False
     create_cal_events = False
 
