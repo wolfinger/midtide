@@ -11,6 +11,7 @@ class OptimizationParams:
 
     def __init__(self, start_time_rel, start_time_abs, end_time_rel, end_time_abs,
                  length_min=30, length_max=120, wave_height_min=2, wave_height_max=12,
+                 swell_period_min=6, swell_period_max=15, swell_directions=None,
                  wind_max=8, water_temp_min=57, time_since_rain=72):
         self.start_time_rel = start_time_rel
         self.start_time_abs = start_time_abs
@@ -20,6 +21,9 @@ class OptimizationParams:
         self.length_max = length_max
         self.wave_height_min = wave_height_min
         self.wave_height_max = wave_height_max
+        self.swell_period_min = swell_period_min
+        self.swell_period_max = swell_period_max
+        self.swell_period_directions = swell_directions
         self.wind_max = wind_max
         self.water_temp_min = water_temp_min
         self.time_since_rain = time_since_rain

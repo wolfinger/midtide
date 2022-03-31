@@ -9,6 +9,8 @@ app that books time on your google calendar to go surfing when it's mid tide
 - `length` how long to shred
   
 `wave size` min (max?)  
+`swell period` min to max  (e.g., >12s @ pb is closey central)  
+`swell diretion` array of directions where it slaps hard  
 `wind` max  
 `rain` within the past [24/48/72] hours  
 `water temp` don't be soft ... more so for wetsuit mapping in the cal event  
