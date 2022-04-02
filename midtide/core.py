@@ -10,7 +10,7 @@ class OptimizationParams:
     """
 
     def __init__(self, start_time_rel, start_time_abs, end_time_rel, end_time_abs,
-                 length_min=30, length_max=120, wave_height_min=2, wave_height_max=12,
+                 length_min=30, length_def=60, length_max=120, wave_height_min=2, wave_height_max=12,
                  swell_period_min=6, swell_period_max=15, swell_directions=None,
                  wind_max=8, water_temp_min=57, time_since_rain=72):
         self.start_time_rel = start_time_rel
@@ -18,6 +18,7 @@ class OptimizationParams:
         self.end_time_rel = end_time_rel
         self.end_time_abs = end_time_abs
         self.length_min = length_min
+        self.length_def = length_def
         self.length_max = length_max
         self.wave_height_min = wave_height_min
         self.wave_height_max = wave_height_max
@@ -79,15 +80,15 @@ def get_surf_sessions(forecast, params):
             if last_high is not None:
                 mid = calc_mid(last_low, last_high)
                 if mid >= datetime.datetime.now():
-                    surf_sessions.append(SurfSession(mid - pd.DateOffset(minutes=params.length / 2),
-                                                     mid + pd.DateOffset(minutes=params.length / 2)))
+                    surf_sessions.append(SurfSession(mid - pd.DateOffset(minutes=params.length_def / 2),
+                                                     mid + pd.DateOffset(minutes=params.length_def / 2)))
         elif row['type'] == 'HIGH':
             last_high = index
             if last_low is not None:
                 mid = calc_mid(last_low, last_high)
                 if mid >= datetime.datetime.now():
-                    surf_sessions.append(SurfSession(mid - pd.DateOffset(minutes=params.length / 2),
-                                                     mid + pd.DateOffset(minutes=params.length / 2)))
+                    surf_sessions.append(SurfSession(mid - pd.DateOffset(minutes=params.length_def / 2),
+                                                     mid + pd.DateOffset(minutes=params.length_def / 2)))
 
     #
     # drop gnar sesh's when the sun's down
