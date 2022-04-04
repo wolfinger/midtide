@@ -10,7 +10,7 @@ def main():
     forecast_days = 3
     forecast_interval = 1
     hit_api = False
-    create_cal_events = False
+    create_cal_events = True
 
     if hit_api:
         forecast = surf_check(forecast_spot, forecast_days, forecast_interval)
@@ -20,7 +20,7 @@ def main():
         with open('data/forecast.pkl', 'rb') as handle:
             forecast = pickle.load(handle)
 
-    print(forecast.get_dataframe("wave"))
+    # print(forecast.get_dataframe("wave"))
 
     # set mid tide optimization parameters
     opt_start_time_rel = datetime.datetime(2022, 3, 6, 0, 15, 0)  # how long after sunrise

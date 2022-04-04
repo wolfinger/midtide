@@ -59,7 +59,7 @@ def create_event_json(session):
     generate google calendar event api json from a SurfSession
     """
     event_json = {
-            'summary': 'gnar sesh',
+            'summary': 'gnar sesh ' + '{:.0f}'.format(session.surf_min) + '-' + '{:.0f}'.format(session.surf_max),
             'start': {
                 'dateTime': session.start_dt.strftime('%Y-%m-%dT%H:%M:%S') + 'Z',
                 # 'timeZone': 'America/Los_Angeles',
@@ -70,7 +70,8 @@ def create_event_json(session):
             },
             'reminders': {
                 'useDefault': False
-            }
+            },
+            'description': 'wind ' + '{:.0f}'.format(session.wind_speed) + 'mph @ ' + session.wind_direction
         }
     
     return event_json

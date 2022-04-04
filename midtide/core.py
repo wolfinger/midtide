@@ -2,6 +2,7 @@ import datetime
 import pandas as pd
 
 from pysurfline import SpotForecast
+from pysurfline.utils import degToCompass
 
 
 class OptimizationParams:
@@ -35,11 +36,13 @@ class SurfSession:
     sarf session
     """
 
-    def __init__(self, start_dt, end_dt, surf_min=None, surf_max=None):
+    def __init__(self, start_dt, end_dt, surf_min=None, surf_max=None, wind_speed=None, wind_direction=None):
         self.start_dt = start_dt
         self.end_dt = end_dt
         self.surf_min = surf_min
         self.surf_max = surf_max
+        self.wind_speed = wind_speed
+        self.wind_direction = wind_direction
 
 
 # surfline api
@@ -54,6 +57,7 @@ def surf_check(spot_id, days, interval):
         "days": days,
         "intervalHours": interval,
     }
+
     return SpotForecast(params)
 
 
@@ -61,8 +65,10 @@ def get_surf_sessions(forecast, params):
     """
     iterate thru a forecast to get surf sessions for each day
     """
-    # get datetime list for only the future and convert to local time zone
+    # get dataframes for different forecast attributes
     tides_df = forecast.get_dataframe("tides")
+    waves_df = forecast.get_dataframe("wave")
+    wind_df = forecast.get_dataframe("wind")
 
     # find the closest low/high tide to current time
     min_dt = tides_df[
@@ -77,27 +83,31 @@ def get_surf_sessions(forecast, params):
     for index, row in tides_df.iterrows():
         if row['type'] == 'LOW':
             last_low = index
-            if last_high is not None:
-                mid = calc_mid(last_low, last_high)
-                if mid >= datetime.datetime.now():
-                    surf_sessions.append(SurfSession(mid - pd.DateOffset(minutes=params.length_def / 2),
-                                                     mid + pd.DateOffset(minutes=params.length_def / 2)))
         elif row['type'] == 'HIGH':
             last_high = index
-            if last_low is not None:
-                mid = calc_mid(last_low, last_high)
-                if mid >= datetime.datetime.now():
-                    surf_sessions.append(SurfSession(mid - pd.DateOffset(minutes=params.length_def / 2),
-                                                     mid + pd.DateOffset(minutes=params.length_def / 2)))
+
+        if (row['type'] == 'LOW' and last_high is not None) or (row['type'] == 'HIGH' and last_low is not None):
+            mid = calc_mid(last_low, last_high)
+            if mid >= datetime.datetime.utcnow():
+                # get surf height
+                surf_size = waves_df.iloc[waves_df.index.get_indexer([mid], method='nearest')][['surf_min', 'surf_max']]
+                surf_min = round(surf_size.iloc[0]['surf_min'], 0)
+                surf_max = round(surf_size.iloc[0]['surf_max'], 0)
+
+                # get wind
+                wind = wind_df.iloc[wind_df.index.get_indexer([mid], method='nearest')][['speed', 'direction']]
+                wind_speed = wind.iloc[0]['speed']
+                wind_direction = degToCompass(wind.iloc[0]['direction'])
+
+                # create surf session
+                surf_sessions.append(SurfSession(mid - pd.DateOffset(minutes=params.length_def / 2),
+                                                 mid + pd.DateOffset(minutes=params.length_def / 2), surf_min,
+                                     surf_max, wind_speed, wind_direction))
 
     #
     # drop gnar sesh's when the sun's down
     # TODO: refactor as function
     sunlight_df = forecast.get_dataframe("sunlightTimes")
-
-    # convert timestamps to local time
-    # for time_pd in ['midnight', 'dawn', 'dusk']:
-    #    sunlight_df[time_pd] = sunlight_df[time_pd] + sunlight_df[time_pd + 'UTCOffset'].astype('timedelta64[h]')
 
     sunlight_df['date'] = sunlight_df['dawn'].dt.date
     sunlight_df = sunlight_df.set_index('date')
@@ -117,6 +127,6 @@ def get_surf_sessions(forecast, params):
 
 def calc_mid(start, end):
     """
-    helper function to calc the mid tide time
+    helper function to calc the midtide time
     """
     return start + (end - start) / 2
