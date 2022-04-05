@@ -105,7 +105,7 @@ def get_surf_sessions(forecast, params):
                                      surf_max, wind_speed, wind_direction))
 
     #
-    # drop gnar sesh's when the sun's down
+    # drop gnar seshs when the sun's down
     # TODO: refactor as function
     sunlight_df = forecast.get_dataframe("sunlightTimes")
 

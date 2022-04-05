@@ -10,7 +10,7 @@ def main():
     forecast_days = 3
     forecast_interval = 1
     hit_api = False
-    create_cal_events = True
+    create_cal_events = False
 
     if hit_api:
         forecast = surf_check(forecast_spot, forecast_days, forecast_interval)
