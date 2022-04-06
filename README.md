@@ -4,7 +4,7 @@ app that books time on your google calendar to go surfing when it's mid tide
 ## optimization parameters
 `start time` / `end time` allow customization by day of week, holidays
 - `absolute`
-- `relative` (to dawn / dusk)
+- `relative` to dawn / dusk
 - `mid tide band` how far from midtide is acceptable if there are calendar conflicts
 - `length` how long to shred
   
