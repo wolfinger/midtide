@@ -9,8 +9,8 @@ def main():
     forecast_spot = "5842041f4e65fad6a7708841"  # pb baby
     forecast_days = 3
     forecast_interval = 1
-    hit_api = False
-    create_cal_events = False
+    hit_api = True
+    create_cal_events = True
 
     if hit_api:
         forecast = surf_check(forecast_spot, forecast_days, forecast_interval)
