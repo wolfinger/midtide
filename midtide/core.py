@@ -11,7 +11,7 @@ class OptimizationParams:
     """
 
     def __init__(self, start_time_rel, start_time_abs, end_time_rel, end_time_abs,
-                 length_min=30, length_def=60, length_max=120, wave_height_min=2, wave_height_max=12,
+                 length_min=30, length_def=60, length_max=120, wave_height_min=3, wave_height_max=12,
                  swell_period_min=6, swell_period_max=15, swell_directions=None,
                  wind_max=8, water_temp_min=57, time_since_rain=72):
         self.start_time_rel = start_time_rel
@@ -104,25 +104,37 @@ def get_surf_sessions(forecast, params):
                                                  mid + pd.DateOffset(minutes=params.length_def / 2), surf_min,
                                      surf_max, wind_speed, wind_direction))
 
-    #
-    # drop gnar seshs when the sun's down
-    # TODO: refactor as function
-    sunlight_df = forecast.get_dataframe("sunlightTimes")
+    # determine good gnar seshs
+    good_surf_sessions = []
 
+    # get sunlight info
+    sunlight_df = forecast.get_dataframe("sunlightTimes")
     sunlight_df['date'] = sunlight_df['dawn'].dt.date
     sunlight_df = sunlight_df.set_index('date')
 
-    daytime_windows = []
-
     for session in surf_sessions:
+        good_session = True
+
+        # check for daytime sessions
         session_dt = session.start_dt.to_pydatetime().date()
 
-        if not sunlight_df[sunlight_df.index == session_dt].empty and \
-                sunlight_df[sunlight_df.index == session_dt]['dawn'].values[0] < session.start_dt.to_numpy() and \
-                sunlight_df[sunlight_df.index == session_dt]['dusk'].values[0] > session.end_dt.to_numpy():
-            daytime_windows.append(session)
+        if sunlight_df[sunlight_df.index == session_dt].empty or \
+                sunlight_df[sunlight_df.index == session_dt]['dawn'].values[0] > session.start_dt.to_numpy() or \
+                sunlight_df[sunlight_df.index == session_dt]['dusk'].values[0] < session.end_dt.to_numpy():
+            good_session = False
 
-    return daytime_windows
+        # check wave height
+        if (session.surf_max < params.wave_height_min) or (session.surf_max > params.wave_height_max):
+            good_session = False
+
+        # check wind
+        if session.wind_speed > params.wind_max:
+            good_session = False
+
+        if good_session:
+            good_surf_sessions.append(session)
+
+    return good_surf_sessions
 
 
 def calc_mid(start, end):
